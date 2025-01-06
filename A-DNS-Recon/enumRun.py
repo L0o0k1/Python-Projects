@@ -1,76 +1,43 @@
 import dns.resolver
-# ===========================
-# --> A Record
+import dns.reversename
+
+def revLookUp(ip_address):
+    try:
+        reverse_name = dns.reversename.from_address(ip_address)
+        ptr_records = dns.resolver.resolve(reverse_name, 'PTR')
+        print(f"\nReverse DNS (PTR) Records for {ip_address}:")
+        for record in ptr_records:
+            print(record.to_text())
+    except dns.resolver.NoAnswer:
+        print(f"No PTR records found for {ip_address}")
+    except dns.resolver.NXDOMAIN:
+        print(f"Reverse DNS lookup failed for {ip_address}")
+    except Exception as e:
+        print(f"Error performing reverse DNS lookup for {ip_address}: {e}")
+
+def getRecords(domain, record_type):
+    try:
+        records = dns.resolver.resolve(domain, record_type)
+        print(f"\n{record_type} Records:")
+        for record in records:
+            if record_type == "MX":
+                print(f"Priority: {record.preference}, Mail Server: {record.exchange.to_text()}")
+            else:
+                print(record.to_text())
+    except dns.resolver.NoAnswer:
+        print(f"No {record_type} records found")
+    except dns.resolver.NXDOMAIN:
+        print(f"Domain {domain} does not exist!")
+    except Exception as e:
+        print(f"Error retrieving {record_type} records: {e}")
+
 def dnsEnum(domain):
     print(f"Performing DNS enumeration for: {domain}\n")
-    try: 
-        aRec = dns.resolver.resolve(domain,'A')
-        print("'A' Records: ")
-        for record in aRec:
-            print(record.to_text())
-    except dns.resolver.NoAnswer:
-        print("No A Record Found....")
-    except dns.resolver.NXDOMAIN:
-        print(f"Domain {domain} Does Not Exist!")
-        return
-    except Exception as e:
-        print(f"Error Retriving A Record: {e}")
-# ===========================
-# --> MX Records
-    try:
-        mxRec = dns.resolver.resolve(domain,'MX')
-        print("\nMX Records: ")
-        for record in mxRec:
-            print(f"Priority: {record.preference} Mail Server: {record.exchange.to_text()}")
-    except dns.resolver.NoAnswer:
-        print("No MX Records Found ...")
-    except Exception as e:
-        print(f"Error Retrieving MX records: {e}")
-# ===========================
-# --> NS Recors
-    try:
-        nsRec = dns.resolver.resolve(domain, 'NS')
-        print("\nNS Records: ")
-        for record in nsRec:
-            print(record.to_text())
-    except dns.resolver.NoAnswer:
-        print("No NS records found")
-    except Exception as e:
-        print(f"Error Retrieving NS records: {e}")
-# ===========================
-# --> TXT Records
-    try:
-        txtRec = dns.resolver.resolve(domain, 'TXT')
-        print("\nTXT Records: ")
-        for record in txtRec:
-            print(record.to_text())
-    except dns.resolver.NoAnswer:
-        print("No TXT records found ...")
-    except Exception as e:
-        print(f"Error Retrieving TXT records: {e}")
-# ===========================
-# --> SOA Records
-    try:
-        soaRec = dns.resolver.resolve(domain, 'SOA')
-        print("\nSOA Records: ")
-        for record in soaRec:
-            print(record.to_text())
-    except dns.resolver.NoAnswer:
-        print("No SOA records found")
-    except Exception as e:
-        print(f"Error Retrieving SOA records: {e}")
-# ===========================
-# -->  CNAME Records
-    try:
-        cnameRec= dns.resolver.resolve(domain, 'CNAME')
-        print("\nCNAME Records:")
-        for record in cnameRec:
-            print(record.to_text())
-    except dns.resolver.NoAnswer:
-        print("No CNAME records found")
-    except Exception as e:
-        print(f"Error retrieving CNAME records: {e}")
+    for record_type in ["A", "MX", "NS", "TXT", "SOA", "CNAME"]:
+        getRecords(domain, record_type)
 
 if __name__ == "__main__":
     domain = input("Enter the domain to enumerate: ")
     dnsEnum(domain)
+    ip_address = input("Enter the IP address for reverse lookup: ")
+    revLookUp(ip_address)
