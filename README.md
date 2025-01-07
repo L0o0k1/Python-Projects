@@ -1,7 +1,7 @@
-## **This Repo Contain 9 Simple Python Projects**
+## **This Repo Contain 6 Simple Python Scripts**
 
 1. A Quiz Game - Easy.
-2. A Number Guesser Game - Easy.
-3. A Password Generator - Easy.
-4. A YT Video Dawnloader - Medium.
-5. DNS enumeration tool - Medium.
+2. A Number Guesser Game.
+3. A Password Generator.
+4. A YT Video Dawnloader.
+5. A DNS enumeration tool.
