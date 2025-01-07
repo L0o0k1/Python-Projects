@@ -5,3 +5,4 @@
 3. A Password Generator.
 4. A YT Video Dawnloader.
 5. A DNS enumeration tool.
+6. A Document Scanner.
