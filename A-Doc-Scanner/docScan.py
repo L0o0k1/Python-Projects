@@ -7,7 +7,6 @@ from PIL import Image, ImageTk
 from fpdf import FPDF
 import os
 
-# Function to order points for perspective transformation
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
     s = pts.sum(axis=1)
@@ -18,7 +17,6 @@ def order_points(pts):
     rect[3] = pts[np.argmax(diff)]
     return rect
 
-# Function to perform four-point perspective transform
 def four_point_transform(image, pts):
     rect = order_points(pts)
     (tl, tr, br, bl) = rect
@@ -42,21 +40,17 @@ def four_point_transform(image, pts):
 
     return warped
 
-# Function to scan a document
 def scan_document(image_path):
-    # Load the image
     image = cv2.imread(image_path)
     resized = imutils.resize(image, height=500)
     gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edged = cv2.Canny(blurred, 75, 200)
 
-    # Find contours
     contours = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     contours = imutils.grab_contours(contours)
     contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
 
-    # Approximate the contour
     for contour in contours:
         perimeter = cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
@@ -65,36 +59,29 @@ def scan_document(image_path):
             screenCnt = approx
             break
 
-    # Apply perspective transform
     warped = four_point_transform(resized, screenCnt.reshape(4, 2))
 
-    # Convert to grayscale and apply adaptive thresholding
     warped_gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
     T = cv2.adaptiveThreshold(warped_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
-    # Enhance the image
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(T)
 
-    # Save the scanned document
     output_path = "scanned_document.jpg"
     cv2.imwrite(output_path, enhanced)
 
     return output_path
 
-# Function to extract text using OCR
 def extract_text(image_path):
     text = pytesseract.image_to_string(image_path, config='--psm 6')
     return text
 
-# Function to save the scanned document as PDF
 def save_as_pdf(image_path, output_pdf):
     pdf = FPDF()
     pdf.add_page()
     pdf.image(image_path, x=10, y=10, w=190)
     pdf.output(output_pdf, "F")
 
-# GUI for document scanning
 class DocumentScannerApp:
     def __init__(self, root):
         self.root = root
@@ -139,7 +126,6 @@ class DocumentScannerApp:
         else:
             self.label.config(text="Please scan a document first.")
 
-# Main function
 if __name__ == "__main__":
     root = Tk()
     app = DocumentScannerApp(root)
